@@ -1,7 +1,7 @@
 /*
 ** 默认配置
 *
-* BRANCH：当前目录，res：路径（js、less、css、image），browsersyncConfig：浏览器监控，spriteConfig：雪碧图（图片合并）
+* BRANCH：当前目录，res：路径（js、sass、less、css、image），browsersyncConfig：浏览器监控，spriteConfig：雪碧图（图片合并）
 *
 **
 */
@@ -12,12 +12,14 @@ var globalOption = {};
 globalOption.res = {
 	src: {
 		    jssrc: path.join(BRANCH, 'src/js'),
+		  sasssrc: path.join(BRANCH, 'src/sass'),
 		  lesssrc: path.join(BRANCH, 'src/less'),
 		  csssrc: path.join(BRANCH, 'src/css'),
 		 imagesrc: path.join(BRANCH, 'src/images')
 	},
 	dest: {
 		   jsdest: path.join(BRANCH, 'dist/javascripts'),
+		 sassdest: path.join(BRANCH, 'dist/stylesheets'),
 		 lessdest: path.join(BRANCH, 'dist/stylesheets'),
 		 cssdest: path.join(BRANCH, 'dist/stylesheets'),
 		imagedest: path.join(BRANCH, 'dist/images')
@@ -32,7 +34,7 @@ globalOption.browsersyncConfig = {
 		},
 		// proxy: ''
 	},
-	files: [globalOption.res.src.jssrc, globalOption.res.src.lesssrc, globalOption.res.src.imagesrc, path.join(BRANCH, 'examples')]
+	files: [globalOption.res.src.jssrc, globalOption.res.src.sasssrc, globalOption.res.src.lesssrc, globalOption.res.src.imagesrc, path.join(BRANCH, 'examples')]
 };
 
 globalOption.spriteConfig = {

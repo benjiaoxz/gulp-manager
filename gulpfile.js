@@ -5,6 +5,7 @@
  *       gulp-uglify:  js压缩
  *       gulp-rename： 文件名修改
  *         gulp-less： less编译
+ *         gulp-sass： sass编译
  *      gulp-postcss： css预处理器
  *      gulp-cssnano： css压缩
  *      autoprefixer： css自动前缀
@@ -28,6 +29,7 @@ var spriteConfig = globalOption.spriteConfig;
 gulp.task('help', function() {
     console.log('	gulp js 				js优化');
     console.log('	gulp less 				less优化');
+    console.log('	gulp sass 				sass优化');
     console.log('	gulp css 				css优化');
     console.log('	gulp sprite 				雪碧图');
     console.log('	gulp image 				图片优化');
@@ -66,6 +68,30 @@ gulp.task('babel', function (arg) {
         .pipe(plumber())
         .pipe(babel({
             presets: ['es2015']
+        }))
+        .pipe(gulp.dest(arr.dest));
+});
+
+//sass转换为css
+gulp.task('scss', function(arg) {
+    var sass = require('gulp-sass');
+    var postcss = require('gulp-postcss');
+    var nano = require('gulp-cssnano');
+    var autoprefixer = require('autoprefixer');
+    var arr = Object.assign({
+        src: res.src.sasssrc,
+        dest: res.dest.sassdest
+    }, arg);
+
+    return gulp.src(arr.src)
+        .pipe(plumber())
+        .pipe(sass())
+        .pipe(postcss([autoprefixer(['iOS >= 7', 'Android >= 4.1'])]))
+        .pipe(nano({
+            zindex: false,
+            autoprefixer: false,
+            discardComments: {discardComments: true},
+            normalizeCharset: false
         }))
         .pipe(gulp.dest(arr.dest));
 });
@@ -144,8 +170,8 @@ gulp.task('image', function(arg) {
  **	监测文件变动
  *
  *	package：  gulp-watch、gulp-clean
- *	    ext：  js、less、jpg|png|gif|jpeg|bmp
- *	     fn：  js、less、image
+ *	    ext：  js、sass、less、jpg|png|gif|jpeg|bmp
+ *	     fn：  js、sass、less、image
  *	  event：  change（修改文件）、add（添加文件）、unlink（删除文件）
  *	     cb：  browsersync
  *
@@ -153,7 +179,7 @@ gulp.task('image', function(arg) {
  */
 gulp.task('watch', function(files, cb) {
     var watch = require('gulp-watch');
-    var wFiles = [res.src.lesssrc, res.src.jssrc, res.src.imagesrc];
+    var wFiles = [res.src.lesssrc, res.src.jssrc, res.src.imagesrc, res.src.sasssrc];
 
     if(files) {
         if(typeof(files) == 'string' || files instanceof Array) {
@@ -233,6 +259,11 @@ gulp.task('watch', function(files, cb) {
         var grc = null;
 
         switch(ext) {
+            case 'scss':
+                distPath = pathParse.dir.replace(res.src.sasssrc, res.dest.sassdest);
+                filePath = path.join(distPath, pathParse.name + '.css');
+                options.compile && (grc = gulp.tasks.scss.fn({src: vinyl, dest: distPath}));
+                break;
             case 'less':
                 distPath = pathParse.dir.replace(res.src.lesssrc, res.dest.lessdest);
                 filePath = path.join(distPath, pathParse.name + '.css');
