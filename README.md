@@ -13,7 +13,6 @@ pages: [http://benjiaoxz.coding.me/gulp-manager/examples/index.html](http://benj
 ## 命令
 
     gulp js 				js优化
-    gulp sass 				sass优化
     gulp less 				less优化
     gulp css 				css优化
     gulp sprite 				雪碧图
@@ -33,7 +32,6 @@ pages: [http://benjiaoxz.coding.me/gulp-manager/examples/index.html](http://benj
             index.html
         src
             js
-            sass
             less
             css
             images

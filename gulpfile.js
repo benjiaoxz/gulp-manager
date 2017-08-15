@@ -74,72 +74,32 @@ gulp.task('babel', function (arg) {
 
 //sass转换为css
 gulp.task('scss', function(arg) {
-    var sass = require('gulp-sass');
-    var postcss = require('gulp-postcss');
-    var nano = require('gulp-cssnano');
-    var autoprefixer = require('autoprefixer');
     var arr = Object.assign({
         src: res.src.sasssrc,
         dest: res.dest.sassdest
     }, arg);
 
-    return gulp.src(arr.src)
-        .pipe(plumber())
-        .pipe(sass())
-        .pipe(postcss([autoprefixer(['iOS >= 7', 'Android >= 4.1'])]))
-        .pipe(nano({
-            zindex: false,
-            autoprefixer: false,
-            discardComments: {discardComments: true},
-            normalizeCharset: false
-        }))
-        .pipe(gulp.dest(arr.dest));
+    return action(arr.src, arr.dest, 'scss');
 });
 
 //less转换为css
 gulp.task('less', function(arg) {
-    var less = require('gulp-less');
-    var postcss = require('gulp-postcss');
-    var nano = require('gulp-cssnano');
-    var autoprefixer = require('autoprefixer');
     var arr = Object.assign({
         src: res.src.lesssrc,
         dest: res.dest.lessdest
     }, arg);
 
-    return gulp.src(arr.src)
-        .pipe(plumber())
-        .pipe(less())
-        .pipe(postcss([autoprefixer(['iOS >= 7', 'Android >= 4.1'])]))
-        .pipe(nano({
-            zindex: false,
-            autoprefixer: false,
-            discardComments: {discardComments: true},
-            normalizeCharset: false
-        }))
-        .pipe(gulp.dest(arr.dest));
+    return action(arr.src, arr.dest, 'less');
 });
 
 //css优化
 gulp.task('css', function(arg) {
-    var postcss = require('gulp-postcss');
-    var nano = require('gulp-cssnano');
-    var autoprefixer = require('autoprefixer');
     var arr = Object.assign({
         src: res.src.csssrc,
         dest: res.dest.cssdest
     }, arg);
 
-    return gulp.src(arr.src)
-        .pipe(plumber())
-        .pipe(postcss([autoprefixer(['iOS >= 7', 'Android >= 4.1'])]))
-        .pipe(nano({
-            zindex: false,
-            autoprefixer: false,
-            discardComments: {discardComments: true},
-            normalizeCharset: false
-        }))
-        .pipe(gulp.dest(arr.dest));
+    return action(arr.src, arr.dest, 'css');
 });
 
 //合并多张图片，并保存为新的图，输出样式
@@ -165,6 +125,33 @@ gulp.task('image', function(arg) {
         .pipe(imagemin())
         .pipe(gulp.dest(arr.dest));
 });
+
+function action(src, dest, type) {
+    var grc = gulp.src(src)
+                .pipe(plumber());
+
+    if(type == 'scss' || type == 'less' || type == 'css') {
+        switch (type) {
+            case 'scss':
+                grc.pipe(require('gulp-sass')());
+                break;
+            case 'less':
+                grc.pipe(require('gulp-less')());
+                break;
+        }
+
+        grc.pipe(require('gulp-postcss')([require('autoprefixer')(['iOS >= 7', 'Android >= 4.1'])]))
+            .pipe(require('gulp-cssnano')({
+                zindex: false,
+                autoprefixer: false,
+                discardComments: {discardComments: true},
+                normalizeCharset: false
+            }))
+            .pipe(gulp.dest(dest));
+    }
+
+    return grc;
+}
 
 /*
  **	监测文件变动
@@ -262,11 +249,13 @@ gulp.task('watch', function(files, cb) {
             case 'scss':
                 distPath = pathParse.dir.replace(res.src.sasssrc, res.dest.sassdest);
                 filePath = path.join(distPath, pathParse.name + '.css');
+                console.log(distPath, filePath)
                 options.compile && (grc = gulp.tasks.scss.fn({src: vinyl, dest: distPath}));
                 break;
             case 'less':
                 distPath = pathParse.dir.replace(res.src.lesssrc, res.dest.lessdest);
                 filePath = path.join(distPath, pathParse.name + '.css');
+                console.log(distPath, filePath)
                 options.compile && (grc = gulp.tasks.less.fn({src: vinyl, dest: distPath}));
                 break;
             case 'css':
