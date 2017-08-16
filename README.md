@@ -14,11 +14,12 @@ pages: [http://benjiaoxz.coding.me/gulp-manager/examples/index.html](http://benj
 
     gulp js 				js优化
     gulp less 				less优化
+    gulp sass 				sass优化
     gulp css 				css优化
-    gulp sprite 				雪碧图
+    gulp sprite 			雪碧图
     gulp image 				图片优化
     gulp watch 				监控静态资源
-    gulp browsersync 			监控文件变化，并自动注入浏览器，无需刷新
+    gulp browsersync 		监控文件变化，并自动注入浏览器，无需刷新
     gulp help 				gulp帮助
 
 ## 建议目录结构
@@ -33,7 +34,7 @@ pages: [http://benjiaoxz.coding.me/gulp-manager/examples/index.html](http://benj
         src
             js
             less
-            css
+            sass
             images
 
 ## 文件

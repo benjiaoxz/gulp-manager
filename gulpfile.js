@@ -17,7 +17,16 @@
  */
 var path = require('path');
 var gulp = require('gulp');
-var plumber = require('gulp-plumber');
+var plumber = require('gulp-plumber'),
+    uglify = require('gulp-uglify'),
+    rename = require('gulp-rename'),
+    less = require('gulp-less'),
+    sass = require('gulp-sass'),
+    postcss = require('gulp-postcss'),
+    cssnano = require('gulp-cssnano'),
+    autoprefixer = require('autoprefixer'),
+    spritesmith = require('gulp.spritesmith'),
+    imagemin = require('gulp-imagemin');
 
 //默认配置
 var globalOption = require('./.browsersyncdef');
@@ -40,36 +49,12 @@ gulp.task('help', function() {
 
 //js优化
 gulp.task('js', function (arg) {
-    var uglify = require('gulp-uglify');
-    var rename = require('gulp-rename');
     var arr = Object.assign({
         src: res.src.jssrc,
         dest: res.dest.jsdest
     }, arg);
 
-    return gulp.src(arr.src)
-        .pipe(plumber())
-        .pipe(uglify())
-        .pipe(rename({
-            suffix: '.min'
-        }))
-        .pipe(gulp.dest(arr.dest));
-});
-
-// js babel: es5 => es6
-gulp.task('babel', function (arg) {
-    var babel = require('gulp-babel');
-    var arr = Object.assign({
-        src: res.src.jssrc,
-        dest: res.dest.jsdest
-    }, arg);
-
-    return gulp.src(arr.src)
-        .pipe(plumber())
-        .pipe(babel({
-            presets: ['es2015']
-        }))
-        .pipe(gulp.dest(arr.dest));
+    return action(arr.src, arr.dest, 'js');
 });
 
 //sass转换为css
@@ -104,53 +89,57 @@ gulp.task('css', function(arg) {
 
 //合并多张图片，并保存为新的图，输出样式
 gulp.task('sprite', function() {
-    var spritesmith = require('gulp.spritesmith');
-
-    return gulp.src(spriteConfig.src)
-        .pipe(plumber())
-        .pipe(spritesmith(spriteConfig.options))
-        .pipe(gulp.dest(spriteConfig.dest));
+    return action(spriteConfig.src, spriteConfig.dest, 'sprite');
 });
 
 //图片优化
 gulp.task('image', function(arg) {
-    var imagemin = require('gulp-imagemin');
     var arr = Object.assign({
         src: res.src.imagesrc,
         dest: res.dest.imagedest
     }, arg);
 
-    return gulp.src(arr.src)
-        .pipe(plumber())
-        .pipe(imagemin())
-        .pipe(gulp.dest(arr.dest));
+    return action(arr.src, arr.dest, 'image');
 });
 
+//执行
 function action(src, dest, type) {
-    var grc = gulp.src(src)
-                .pipe(plumber());
+    return gulp.src(src)
+                .pipe(plumber())
+                .pipe(function () {
+                    var streams = null;
 
-    if(type == 'scss' || type == 'less' || type == 'css') {
-        switch (type) {
-            case 'scss':
-                grc.pipe(require('gulp-sass')());
-                break;
-            case 'less':
-                grc.pipe(require('gulp-less')());
-                break;
-        }
+                    if(type == 'scss' || type == 'less' || type == 'css') {
+                        switch (type) {
+                            case 'scss':
+                                streams = sass();
+                                break;
+                            case 'less':
+                                streams = less();
+                                break;
+                        }
 
-        grc.pipe(require('gulp-postcss')([require('autoprefixer')(['iOS >= 7', 'Android >= 4.1'])]))
-            .pipe(require('gulp-cssnano')({
-                zindex: false,
-                autoprefixer: false,
-                discardComments: {discardComments: true},
-                normalizeCharset: false
-            }))
-            .pipe(gulp.dest(dest));
-    }
+                        streams.pipe(postcss([autoprefixer(['iOS >= 7', 'Android >= 4.1'])]))
+                                            .pipe(cssnano({
+                                                zindex: false,
+                                                autoprefixer: false,
+                                                discardComments: {discardComments: true},
+                                                normalizeCharset: false
+                                            }));
+                    } else if(type == 'image') {
+                        streams = imagemin();
+                    } else if(type == 'sprite') {
+                        streams = spritesmith(spriteConfig.options);
+                    } else if(type == 'js') {
+                        streams = uglify();
+                        streams.pipe(rename({
+                                    suffix: '.min'
+                                  }));
+                    }
 
-    return grc;
+                    return streams;
+                }())
+                .pipe(gulp.dest(dest));
 }
 
 /*
@@ -249,13 +238,11 @@ gulp.task('watch', function(files, cb) {
             case 'scss':
                 distPath = pathParse.dir.replace(res.src.sasssrc, res.dest.sassdest);
                 filePath = path.join(distPath, pathParse.name + '.css');
-                console.log(distPath, filePath)
                 options.compile && (grc = gulp.tasks.scss.fn({src: vinyl, dest: distPath}));
                 break;
             case 'less':
                 distPath = pathParse.dir.replace(res.src.lesssrc, res.dest.lessdest);
                 filePath = path.join(distPath, pathParse.name + '.css');
-                console.log(distPath, filePath)
                 options.compile && (grc = gulp.tasks.less.fn({src: vinyl, dest: distPath}));
                 break;
             case 'css':
