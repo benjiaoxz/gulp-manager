@@ -15,24 +15,24 @@
  *
  **
  */
-var path = require('path');
-var gulp = require('gulp');
-var plumber = require('gulp-plumber'),
-    uglify = require('gulp-uglify'),
-    rename = require('gulp-rename'),
-    less = require('gulp-less'),
-    sass = require('gulp-sass'),
-    postcss = require('gulp-postcss'),
-    cssnano = require('gulp-cssnano'),
-    autoprefixer = require('autoprefixer'),
-    spritesmith = require('gulp.spritesmith'),
-    imagemin = require('gulp-imagemin');
+var path            = require('path');
+var gulp            = require('gulp');
+var plumber         = require('gulp-plumber'),
+    uglify          = require('gulp-uglify'),
+    rename          = require('gulp-rename'),
+    less            = require('gulp-less'),
+    sass            = require('gulp-sass'),
+    postcss         = require('gulp-postcss'),
+    cssnano         = require('gulp-cssnano'),
+    autoprefixer    = require('autoprefixer'),
+    spritesmith     = require('gulp.spritesmith'),
+    imagemin        = require('gulp-imagemin');
 
 //默认配置
-var globalOption = require('./.browsersyncdef');
-var res = globalOption.res;
-var browsersyncConfig = globalOption.browsersyncConfig;
-var spriteConfig = globalOption.spriteConfig;
+var globalOption        = require('./.browsersyncdef');
+var res                 = globalOption.res;
+var browsersyncConfig   = globalOption.browsersyncConfig;
+var spriteConfig        = globalOption.spriteConfig;
 
 //帮助
 gulp.task('help', function() {
