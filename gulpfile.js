@@ -39,7 +39,6 @@ gulp.task('help', function() {
     console.log('	gulp js 				js优化');
     console.log('	gulp less 				less优化');
     console.log('	gulp sass 				sass优化');
-    console.log('	gulp css 				css优化');
     console.log('	gulp sprite 				雪碧图');
     console.log('	gulp image 				图片优化');
     console.log('	gulp watch 				监控静态资源');
@@ -77,16 +76,6 @@ gulp.task('less', function(arg) {
     return action(arr.src, arr.dest, 'less');
 });
 
-//css优化
-gulp.task('css', function(arg) {
-    var arr = Object.assign({
-        src: res.src.csssrc,
-        dest: res.dest.cssdest
-    }, arg);
-
-    return action(arr.src, arr.dest, 'css');
-});
-
 //合并多张图片，并保存为新的图，输出样式
 gulp.task('sprite', function() {
     return action(spriteConfig.src, spriteConfig.dest, 'sprite');
@@ -102,44 +91,83 @@ gulp.task('image', function(arg) {
     return action(arr.src, arr.dest, 'image');
 });
 
-//执行
+/*
+* 执行
+* */
 function action(src, dest, type) {
-    return gulp.src(src)
-                .pipe(plumber())
-                .pipe(function () {
-                    var streams = null;
+    if(!fileFilter(src)) {
+        return gulp.src(src)
+                    .pipe(plumber())
+                    .pipe(function () {
+                        var streams = null;
 
-                    if(type == 'scss' || type == 'less' || type == 'css') {
-                        switch (type) {
-                            case 'scss':
-                                streams = sass();
-                                break;
-                            case 'less':
-                                streams = less();
-                                break;
+                        if (type == 'scss' || type == 'less') {
+                            switch (type) {
+                                case 'scss':
+                                    streams = sass();
+                                    break;
+                                case 'less':
+                                    streams = less();
+                                    break;
+                            }
+
+                            streams.pipe(postcss([autoprefixer(['iOS >= 7', 'Android >= 4.1'])]))
+                                .pipe(cssnano({
+                                    zindex: false,
+                                    autoprefixer: false,
+                                    discardComments: {discardComments: true},
+                                    normalizeCharset: false
+                                }));
+                        } else if (type == 'image') {
+                            streams = imagemin();
+                        } else if (type == 'sprite') {
+                            streams = spritesmith(spriteConfig.options);
+                        } else if (type == 'js') {
+                            streams = uglify();
+                            streams.pipe(rename({
+                                suffix: '.min'
+                            }));
                         }
 
-                        streams.pipe(postcss([autoprefixer(['iOS >= 7', 'Android >= 4.1'])]))
-                                            .pipe(cssnano({
-                                                zindex: false,
-                                                autoprefixer: false,
-                                                discardComments: {discardComments: true},
-                                                normalizeCharset: false
-                                            }));
-                    } else if(type == 'image') {
-                        streams = imagemin();
-                    } else if(type == 'sprite') {
-                        streams = spritesmith(spriteConfig.options);
-                    } else if(type == 'js') {
-                        streams = uglify();
-                        streams.pipe(rename({
-                                    suffix: '.min'
-                                  }));
-                    }
+                        return streams;
+                    }())
+                    .pipe(gulp.dest(dest));
+    } else {
+        return gulp;
+    }
+}
 
-                    return streams;
-                }())
-                .pipe(gulp.dest(dest));
+/*
+* 过滤文件
+* */
+function fileFilter(src) {
+    var fs = require('fs');
+    var srcStat = fs.lstatSync(src);
+
+    if(!srcStat.isDirectory() && !srcStat.isFile()) {
+        throw new Error('not find file or directory');
+    } else {
+        var srcRelative = path.resolve(src).replace(/(\/|\\)/gi, "_");
+    }
+
+    var result = false;
+
+    try {
+        res.filter.forEach(function (item, index) {
+            var stat = fs.lstatSync(item);
+
+            if(stat.isDirectory() || stat.isFile()) {
+                var iRelative = path.resolve(item).replace(/(\/|\\)/gi, "_");
+
+                if(srcRelative == iRelative || srcRelative.match(new RegExp(iRelative, "gi")).length > 0) {
+                    result = true;
+                    throw new Error('StopIteration');
+                }
+            }
+        });
+    } catch (e) {}
+
+    return result;
 }
 
 /*
@@ -244,11 +272,6 @@ gulp.task('watch', function(files, cb) {
                 distPath = pathParse.dir.replace(res.src.lesssrc, res.dest.lessdest);
                 filePath = path.join(distPath, pathParse.name + '.css');
                 options.compile && (grc = gulp.tasks.less.fn({src: vinyl, dest: distPath}));
-                break;
-            case 'css':
-                distPath = pathParse.dir.replace(res.src.csssrc, res.dest.cssdest);
-                filePath = path.join(distPath, pathParse.name + '.min.css');
-                options.compile && (grc = gulp.tasks.css.fn({src: vinyl, dest: distPath}));
                 break;
             case 'js':
                 distPath = pathParse.dir.replace(res.src.jssrc, res.dest.jsdest);

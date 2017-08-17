@@ -1,7 +1,7 @@
 /*
 ** 默认配置
 *
-* BRANCH：当前目录，res：路径（js、sass、less、css、image），browsersyncConfig：浏览器监控，spriteConfig：雪碧图（图片合并）
+* BRANCH：当前目录，res：路径（js、sass、less、image），browsersyncConfig：浏览器监控，spriteConfig：雪碧图（图片合并）
 *
 **
 */
@@ -14,16 +14,18 @@ globalOption.res = {
 		    jssrc: path.join(BRANCH, 'src/js'),
 		  sasssrc: path.join(BRANCH, 'src/sass'),
 		  lesssrc: path.join(BRANCH, 'src/less'),
-		  csssrc: path.join(BRANCH, 'src/css'),
 		 imagesrc: path.join(BRANCH, 'src/images')
 	},
 	dest: {
 		   jsdest: path.join(BRANCH, 'dist/javascripts'),
 		 sassdest: path.join(BRANCH, 'dist/stylesheets'),
 		 lessdest: path.join(BRANCH, 'dist/stylesheets'),
-		 cssdest: path.join(BRANCH, 'dist/stylesheets'),
 		imagedest: path.join(BRANCH, 'dist/images')
-	}
+	},
+	filter: [
+        path.join(BRANCH, 'src/less/base'),
+        path.join(BRANCH, 'src/sass/base')
+	]
 };
 
 globalOption.browsersyncConfig = {
