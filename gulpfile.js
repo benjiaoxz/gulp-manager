@@ -5,7 +5,6 @@
  *       gulp-uglify:  js压缩
  *       gulp-rename： 文件名修改
  *         gulp-less： less编译
- *         gulp-sass： sass编译
  *      gulp-postcss： css预处理器
  *      gulp-cssnano： css压缩
  *      autoprefixer： css自动前缀
@@ -21,12 +20,12 @@ var plumber         = require('gulp-plumber'),
     uglify          = require('gulp-uglify'),
     rename          = require('gulp-rename'),
     less            = require('gulp-less'),
-    sass            = require('gulp-sass'),
     postcss         = require('gulp-postcss'),
     cssnano         = require('gulp-cssnano'),
     autoprefixer    = require('autoprefixer'),
     spritesmith     = require('gulp.spritesmith'),
     imagemin        = require('gulp-imagemin');
+    babel        = require('gulp-babel');
 
 //默认配置
 var globalOption        = require('./.browsersyncdef');
@@ -38,7 +37,6 @@ var spriteConfig        = globalOption.spriteConfig;
 gulp.task('help', function() {
     console.log('	gulp js 				js优化');
     console.log('	gulp less 				less优化');
-    console.log('	gulp sass 				sass优化');
     console.log('	gulp sprite 				雪碧图');
     console.log('	gulp image 				图片优化');
     console.log('	gulp watch 				监控静态资源');
@@ -54,16 +52,6 @@ gulp.task('js', function (arg) {
     }, arg);
 
     return action(arr.src, arr.dest, 'js');
-});
-
-//sass转换为css
-gulp.task('scss', function(arg) {
-    var arr = Object.assign({
-        src: res.src.sasssrc,
-        dest: res.dest.sassdest
-    }, arg);
-
-    return action(arr.src, arr.dest, 'scss');
 });
 
 //less转换为css
@@ -101,16 +89,8 @@ function action(src, dest, type) {
                     .pipe(function () {
                         var streams = null;
 
-                        if (type == 'scss' || type == 'less') {
-                            switch (type) {
-                                case 'scss':
-                                    streams = sass();
-                                    break;
-                                case 'less':
-                                    streams = less();
-                                    break;
-                            }
-
+                        if (type == 'less') {
+                            streams = less();
                             streams.pipe(postcss([autoprefixer(['iOS >= 7', 'Android >= 4.1'])]))
                                 .pipe(cssnano({
                                     zindex: false,
@@ -123,8 +103,10 @@ function action(src, dest, type) {
                         } else if (type == 'sprite') {
                             streams = spritesmith(spriteConfig.options);
                         } else if (type == 'js') {
-                            streams = uglify();
-                            streams.pipe(rename({
+                            streams = babel();
+                            streams
+                                .pipe(uglify())
+                                .pipe(rename({
                                 suffix: '.min'
                             }));
                         }
@@ -174,8 +156,8 @@ function fileFilter(src) {
  **	监测文件变动
  *
  *	package：  gulp-watch、gulp-clean
- *	    ext：  js、sass、less、jpg|png|gif|jpeg|bmp
- *	     fn：  js、sass、less、image
+ *	    ext：  js、less、jpg|png|gif|jpeg|bmp
+ *	     fn：  js、less、image
  *	  event：  change（修改文件）、add（添加文件）、unlink（删除文件）
  *	     cb：  browsersync
  *
@@ -183,7 +165,7 @@ function fileFilter(src) {
  */
 gulp.task('watch', function(files, cb) {
     var watch = require('gulp-watch');
-    var wFiles = [res.src.lesssrc, res.src.jssrc, res.src.imagesrc, res.src.sasssrc];
+    var wFiles = [res.src.lesssrc, res.src.jssrc, res.src.imagesrc];
 
     if(files) {
         if(typeof(files) == 'string' || files instanceof Array) {
@@ -263,11 +245,6 @@ gulp.task('watch', function(files, cb) {
         var grc = null;
 
         switch(ext) {
-            case 'scss':
-                distPath = pathParse.dir.replace(res.src.sasssrc, res.dest.sassdest);
-                filePath = path.join(distPath, pathParse.name + '.css');
-                options.compile && (grc = gulp.tasks.scss.fn({src: vinyl, dest: distPath}));
-                break;
             case 'less':
                 distPath = pathParse.dir.replace(res.src.lesssrc, res.dest.lessdest);
                 filePath = path.join(distPath, pathParse.name + '.css');

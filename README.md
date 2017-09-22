@@ -14,7 +14,6 @@ pages: [http://benjiaoxz.coding.me/gulp-manager/examples/index.html](http://benj
 
     gulp js 				js优化
     gulp less 				less优化
-    gulp sass 				sass优化
     gulp sprite 			        雪碧图
     gulp image 				图片优化
     gulp watch 				监控静态资源
@@ -33,7 +32,6 @@ pages: [http://benjiaoxz.coding.me/gulp-manager/examples/index.html](http://benj
         src
             js
             less
-            sass
             images
 
 ## 文件
@@ -48,19 +46,16 @@ pages: [http://benjiaoxz.coding.me/gulp-manager/examples/index.html](http://benj
     globalOption.res = {
     	src: {
     		    jssrc: path.join(BRANCH, 'src/js'),
-    		  sasssrc: path.join(BRANCH, 'src/sass'),
     		  lesssrc: path.join(BRANCH, 'src/less'),
     		 imagesrc: path.join(BRANCH, 'src/images')
     	},
     	dest: {
     		   jsdest: path.join(BRANCH, 'dist/javascripts'),
-    		 sassdest: path.join(BRANCH, 'dist/stylesheets'),
     		 lessdest: path.join(BRANCH, 'dist/stylesheets'),
     		imagedest: path.join(BRANCH, 'dist/images')
     	},
     	filter: [
-            path.join(BRANCH, 'src/less/base'),
-            path.join(BRANCH, 'src/sass/base')
+            path.join(BRANCH, 'src/less/base')
     	]
     };
     
