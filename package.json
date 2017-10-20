@@ -10,11 +10,11 @@
     "gulp"
   ],
   "private": true,
-  "dependencies": {},
+  "dependencies": {
+    "babel-polyfill": "^6.26.0"
+  },
   "devDependencies": {
     "autoprefixer": "^6.5.4",
-    "babel-core": "^6.26.0",
-    "babel-preset-es2015": "^6.24.1",
     "browser-sync": "^2.18.5",
     "gulp": "^3.9.1",
     "gulp-babel": "^7.0.0",
